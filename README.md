@@ -6,12 +6,12 @@ and try to implement the following improvement for q=64 by [1]:
 
 
 1) Factor 2^64 -1 which is r = 3×5×17×257×641×65537×6700417 (7 distinct prime factors,  factorized using by Wolfram Alpha)
-2) Generate a new nth degree monic polynomial 
-3) Check for absence of linear factors: in this case x + 1
-4) Check if f( x ) has two or more irreducible factors using the Berlekamp polynomial factorization method  <-- This is the most time consuming line
+2) Generate a new nth degree monic polynomial f(x)
+3) Check for absence of linear factors: in this case x + 1 ie if 1 is a root of f.
+4) Check if f(x) has two or more irreducible factors using the Berlekamp polynomial factorization method  <-- This is the most time consuming line
 5) Since p=2, this step is trivial (x^(2^64 -1)=1 by definition, therefoer we get a 1=1)
 6) Since n=64 and a=1, again we get a 1=1 and proceed
-7) for m in{r/3, r/5,r/17, ...} 
+7) for m in{r/3, r/5,r/17, ...} check x^m != integer modulo f(x)
 
 
 [1]: http://www.seanerikoconnor.freeservers.com/Mathematics/AbstractAlgebra/PrimitivePolynomials/theory.html
