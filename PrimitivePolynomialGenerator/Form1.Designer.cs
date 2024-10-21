@@ -34,6 +34,7 @@ namespace PrimitivePolynomialGenerator
             this.CheckIsPrimitiveButton = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.richTextBox2 = new System.Windows.Forms.RichTextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.PolynomialBinaryOutputRtbx = new System.Windows.Forms.RichTextBox();
@@ -46,7 +47,7 @@ namespace PrimitivePolynomialGenerator
             this.CheckIsPrimitiveRtbx = new System.Windows.Forms.RichTextBox();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.generatePolyBgw = new System.ComponentModel.BackgroundWorker();
-            this.richTextBox2 = new System.Windows.Forms.RichTextBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -91,6 +92,14 @@ namespace PrimitivePolynomialGenerator
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Generate";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // richTextBox2
+            // 
+            this.richTextBox2.Location = new System.Drawing.Point(18, 155);
+            this.richTextBox2.Name = "richTextBox2";
+            this.richTextBox2.Size = new System.Drawing.Size(451, 31);
+            this.richTextBox2.TabIndex = 9;
+            this.richTextBox2.Text = "";
             // 
             // label2
             // 
@@ -153,6 +162,7 @@ namespace PrimitivePolynomialGenerator
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.button1);
             this.tabPage2.Controls.Add(this.richTextBox1);
             this.tabPage2.Controls.Add(this.CheckIsPrimitiveRtbx);
             this.tabPage2.Controls.Add(this.CheckIsPrimitiveButton);
@@ -198,13 +208,15 @@ namespace PrimitivePolynomialGenerator
             this.generatePolyBgw.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.generatePolyBgw_ProgressChanged);
             this.generatePolyBgw.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.generatePolyBgw_RunWorkerCompleted);
             // 
-            // richTextBox2
+            // button1
             // 
-            this.richTextBox2.Location = new System.Drawing.Point(18, 155);
-            this.richTextBox2.Name = "richTextBox2";
-            this.richTextBox2.Size = new System.Drawing.Size(451, 31);
-            this.richTextBox2.TabIndex = 9;
-            this.richTextBox2.Text = "";
+            this.button1.Location = new System.Drawing.Point(152, 110);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 9;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // Form1
             // 
@@ -243,5 +255,6 @@ namespace PrimitivePolynomialGenerator
         private System.ComponentModel.BackgroundWorker generatePolyBgw;
         private Label label2;
         private RichTextBox richTextBox2;
+        private Button button1;
     }
 }

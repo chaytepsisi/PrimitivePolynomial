@@ -104,7 +104,7 @@ class GaloisField
     }
 
     // Check if a polynomial is irreducible over GF(2)
-    public bool IsIrreducible()
+    public bool IsIrreducible(int[] polinom)
     {
         // Generate all polynomials of degree <= degree/2
         for (int d = 1; d <= degree / 2; d++)
@@ -112,7 +112,7 @@ class GaloisField
             List<int[]> lowerDegreePolynomials = GeneratePolynomials(d);
             foreach (var poly in lowerDegreePolynomials)
             {
-                if (ModReduce((int[])polynomial.Clone(), poly).Length == 1 && ModReduce((int[])polynomial.Clone(), poly)[0] == 0)
+                if (ModReduce((int[])polinom.Clone(), poly).Length == 1 && ModReduce((int[])polinom.Clone(), poly)[0] == 0)
                 {
                     divisor = poly;
                     return false; // Polynomial is divisible by a smaller degree polynomial
@@ -137,12 +137,12 @@ class GaloisField
     }
 
     // Check if the polynomial is primitive over GF(2^m)
-    public bool IsPrimitive()
+    public bool IsPrimitive(int[] polinom)
     {
-        int m = polynomial.Length - 1;
+        int m = polinom.Length - 1;
 
         // Check if the polynomial is irreducible first
-        if (!IsIrreducible())
+        if (!IsIrreducible(polinom))
         {
             return false; // Not primitive if not irreducible
         }
@@ -159,7 +159,7 @@ class GaloisField
         {
             if (d < order)
             {
-                int[] modExpResult = ModExp(new int[] { 0, 1 }, d, (int[])polynomial.Clone());
+                int[] modExpResult = ModExp(new int[] { 0, 1 }, d, polinom);
                 if (modExpResult.Length == 1 && modExpResult[0] == 1)
                 {
                     return false; // Not primitive if x^d ≡ 1 for any divisor d < 2^m - 1
@@ -192,16 +192,16 @@ class GaloisField
     }
 
     // Solve the linear system using Berlekamp's algorithm to factorize polynomials
-    public List<int[]> BerlekampFactorization()
+    public List<int[]> BerlekampFactorization(int[] polinom)
     {
         List<int[]> factors = new List<int[]>();
-        int m = polynomial.Length - 1;
+        int m = polinom.Length - 1;
 
         // Compute Q(x) = x^(2^i) mod polynomial for all i
         int[,] Q = new int[m, m];
         for (int i = 0; i < m; i++)
         {
-            int[] xPow2i = ModExp(new int[] { 0, 1 }, 1 << i, polynomial); // x^(2^i)
+            int[] xPow2i = ModExp(new int[] { 0, 1 }, 1 << i, polinom); // x^(2^i)
             for (int j = 0; j < m; j++)
             {
                 Q[j, i] = xPow2i[j];
@@ -237,7 +237,7 @@ class GaloisField
                     factorCandidate = Multiply(factorCandidate, new int[] { 0, 1 }); // Multiply by x^i
                 }
             }
-            int[] gcdResult = GCD(polynomial, factorCandidate);
+            int[] gcdResult = GCD(polinom, factorCandidate);
             if (gcdResult.Length > 1 && PolynomialToInt(gcdResult) != 1)
             {
                 factors.Add(gcdResult);

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace PrimitivePolynomialGenerator
 {
@@ -37,9 +39,9 @@ namespace PrimitivePolynomialGenerator
         }
 
         // Modular reduction of the polynomial over GF(2^m)
-        private int[] ModReduce(int[] poly, int[] modPoly)
+        public int[] ModReduce(int[] polinom, int[] modPoly)
         {
-            poly = (int[])poly.Clone(); // Clone to avoid modifying the original poly
+            int[] poly = (int[])polinom.Clone(); // Clone to avoid modifying the original poly
             int polyDeg = poly.Length - 1;
             while (polyDeg >= modPoly.Length - 1)
             {
@@ -108,15 +110,23 @@ namespace PrimitivePolynomialGenerator
         }
 
         // Check if a polynomial is irreducible over GF(2)
-        public bool IsIrreducible()
+        public bool IsIrreducible(int[] polinom)
         {
+            var factors=BerlekampFactorization(polinom);
+            if (factors.Count == 1)
+                return true; // Irreducible
+            else
+            {
+                divisor = factors[0];
+                return false; // Irreducible
+            }
             // Generate all polynomials of degree <= degree/2
-            for (int d = 1; d <= degree / 2; d++)
+            /*for (int d = 1; d <= degree / 2; d++)
             {
                 List<int[]> lowerDegreePolynomials = GeneratePolynomials(d);
                 foreach (var poly in lowerDegreePolynomials)
                 {
-                    if (ModReduce((int[])polynomial.Clone(), poly).Length == 1 && ModReduce((int[])polynomial.Clone(), poly)[0] == 0)
+                    if (ModReduce((int[])polinom.Clone(), poly).Length == 1 && ModReduce((int[])polinom.Clone(), poly)[0] == 0)
                     {
                         divisor = poly;
                         return false; // Polynomial is divisible by a smaller degree polynomial
@@ -124,6 +134,8 @@ namespace PrimitivePolynomialGenerator
                 }
             }
             return true; // Irreducible
+            */
+
         }
 
         // Find divisors of a number
@@ -143,12 +155,12 @@ namespace PrimitivePolynomialGenerator
         }
 
         // Check if the polynomial is primitive over GF(2^m)
-        public bool IsPrimitive()
+        public bool IsPrimitive(int[] polinom)
         {
-            int m = polynomial.Length - 1;
+            int m = polinom.Length - 1;
 
             // Check if the polynomial is irreducible first
-            if (!IsIrreducible())
+            if (!IsIrreducible(polinom))
             {
                 return false; // Not primitive if not irreducible
             }
@@ -165,7 +177,7 @@ namespace PrimitivePolynomialGenerator
             {
                 if (d < order)
                 {
-                    int[] modExpResult = ModExp(new int[] { 0, 1 }, d, (int[])polynomial.Clone());
+                    int[] modExpResult = ModExp(new int[] { 0, 1 }, d, (int[])polinom.Clone());
                     if (modExpResult.Length == 1 && modExpResult[0] == 1)
                     {
                         return false; // Not primitive if x^d ≡ 1 for any divisor d < 2^m - 1
@@ -197,23 +209,51 @@ namespace PrimitivePolynomialGenerator
             return (quotient, remainder);
         }
 
+
+
+        public int[] IsSquareFree(int[] polinom)
+        {
+            var derivative = new int[polinom.Length - 1];
+            for (int i = 0; i < derivative.Length; i++)
+            {
+                derivative[i] = polinom[i + 1] * (i + 1) % 2; ;
+            }
+
+            if(Commons.IsZeroPolynomial(derivative))
+            {
+                return Commons.SquareRootPoly(polinom);
+            }
+
+            return GCD(polinom, derivative);
+        }
+
         // Solve the linear system using Berlekamp's algorithm to factorize polynomials
-        public List<int[]> BerlekampFactorization()
+        public List<int[]> BerlekampFactorization(int[] polinom)
         {
             List<int[]> factors = new List<int[]>();
-            int m = polynomial.Length - 1;
+
+            var gcdDerivative =IsSquareFree(polinom);
+            if (gcdDerivative.Length != 1)
+            {
+                factors.Add(gcdDerivative);
+                factors.Add(polinom);
+                return factors;
+            }
+
+            
+            int m = polinom.Length - 1;
 
             // Compute Q(x) = x^(2^i) mod polynomial for all i
             int[,] Q = new int[m, m];
             for (int i = 0; i < m; i++)
             {
-                int[] xPow2i = ModExp(new int[] { 0, 1 }, 1 << i, polynomial); // x^(2^i)
-                for (int j = 0; j < m; j++)
+                int[] xPow2i = ModExp(new int[] { 0, 1 }, 2* i, polinom); // x^(2^i)
+                for (int j = 0; j < xPow2i.Length; j++)
                 {
-                    Q[j, i] = xPow2i[j];
+                    Q[i, j] = xPow2i[j];
                 }
             }
-
+            Commons.PrintMatrix(Q, "Q");
             // Create Berlekamp matrix (Q(x) - I)
             int[,] berlekampMatrix = new int[m, m];
             for (int i = 0; i < m; i++)
@@ -232,6 +272,16 @@ namespace PrimitivePolynomialGenerator
             // (We can use Gaussian elimination here)
             List<int[]> nullSpace = GaussianElimination(berlekampMatrix);
 
+            foreach (int[] nullVector in nullSpace)
+            {
+                int[] gcdResult = GCD(polinom, nullVector);
+                if (gcdResult.Length > 1 && PolynomialToInt(gcdResult) != 1)
+                {
+                    factors.Add(gcdResult);
+                }
+            }
+
+            /*
             // Use GCD to find factors from the null space
             foreach (int[] nullVector in nullSpace)
             {
@@ -243,28 +293,75 @@ namespace PrimitivePolynomialGenerator
                         factorCandidate = Multiply(factorCandidate, new int[] { 0, 1 }); // Multiply by x^i
                     }
                 }
-                int[] gcdResult = GCD(polynomial, factorCandidate);
+                int[] gcdResult = GCD(polinom, factorCandidate);
                 if (gcdResult.Length > 1 && PolynomialToInt(gcdResult) != 1)
                 {
                     factors.Add(gcdResult);
                 }
-            }
-
-            return factors;
+            }*/
+            factors.Add(polinom);
+                return factors;
         }
 
 
         // Gaussian elimination to find the null space
-        private List<int[]> GaussianElimination(int[,] matrix)
+        private List<int[]> GaussianElimination(int[,] berlekampmatrix)
         {
+
+            var matrix = (int[,])berlekampmatrix.Clone();
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             List<int[]> nullSpace = new List<int[]>();
+            for (int i = 0; i < rows; i++)
+            {
+                // Find the leading one in the current row
+                /*for (int j = i; j < rows; j++)
+                {
+                    if (matrix[j, i] == 1)
+                    {
+                        // Swap the rows
+                        for (int k = 0; k < cols; k++)
+                        {
+                            var temp = matrix[i, k];
+                            matrix[i, k] = matrix[j, k];
+                            matrix[j, k] = temp;
+                        }
+                        break;
+                    }
+                }
+                */
+                // Eliminate below
+                for (int j = i + 1; j < rows; j++)
+                {
+                    if (matrix[j, i] == 1)
+                    {
+                        for (int k = 0; k < cols; k++)
+                        {
+                            matrix[j, k] ^= matrix[i, k];
+                        }
+                    }
+                }
+            }
 
-            // TODO: Implement the Gaussian elimination logic to find null space
+            for (int i = 0; i < rows; i++)
+            {
+                bool isNull = true;
+                for (int j = 0; j < cols; j++)
+                    if (matrix[i, j] == 1)
+                    {
+                        isNull = false;
+                        break;
+                    }
+                if (isNull)
+                {
+                    nullSpace.Add(Commons.GetRow(berlekampmatrix, i));
+                }
+            }
 
             return nullSpace;
         }
+
+
 
         private ulong PolynomialToInt(int[] poly)
         {

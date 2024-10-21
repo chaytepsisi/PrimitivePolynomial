@@ -23,6 +23,7 @@ namespace PrimitivePolynomialGenerator
         }
         private void CheckIsPrimitiveButton_Click(object sender, EventArgs e)
         {
+            CheckIsPrimitiveRtbx.Text = "x^16 + x^15 + x^14 + x^11 + x^10 + x^9 + x^4 + x^3 + 1";
             int[] polynomial = new int[1];
             bool isPrimitive = false;
             string inputPolyStr = CheckIsPrimitiveRtbx.Text.Replace(" ", "");
@@ -76,9 +77,9 @@ namespace PrimitivePolynomialGenerator
             }
             else
             {
-                polynomial = polynomial.Reverse().ToArray();
+                //polynomial = polynomial.Reverse().ToArray();
                 GaloisField gf = new GaloisField(polynomial);
-                isPrimitive = gf.IsPrimitive();
+                isPrimitive = gf.IsPrimitive(polynomial);
 
                 string resultStr = inputPolyStr;
                 if (isPrimitive)
@@ -125,14 +126,14 @@ namespace PrimitivePolynomialGenerator
             randomPoly = Commons.GenerateBinaryArray(degree);
             GaloisField gf = new GaloisField(randomPoly);
             int tries = 0;
-            generationResult = gf.IsPrimitive();
+            generationResult = gf.IsPrimitive(randomPoly);
 
             double percentage = 100.0 / maxCount;
             while (!generationResult && tries < maxCount)
             {
                 randomPoly = Commons.GenerateBinaryArray(degree);
                 gf = new GaloisField(randomPoly);
-                generationResult = gf.IsPrimitive();
+                generationResult = gf.IsPrimitive(randomPoly);
                 tries++;
                 generatePolyBgw.ReportProgress((int)(percentage * tries));
                 if (generatePolyBgw.CancellationPending)
@@ -191,6 +192,16 @@ namespace PrimitivePolynomialGenerator
         private void generatePolyBgw_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             progressBar1.Value = e.ProgressPercentage;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            int[] x7 = new int[] { 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0, 1 };
+            int[] y7 = new int[] { 0, 0, 1 };
+
+            GaloisField gf=new GaloisField(new int[] {1,0,1,1,1,1,1,0,1});
+            var poli= gf.ModReduce(gf.Multiply(x7, y7), new int[] { 1, 0, 1, 1, 1, 1, 1, 0, 1 });
+            richTextBox1.Text = Commons.PolynomialArrToString(poli);
         }
     }
 }

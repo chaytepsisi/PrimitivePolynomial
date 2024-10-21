@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +9,8 @@ namespace PrimitivePolynomialGenerator
 {
     internal class Commons
     {
+
+        public static int[] ONE_POLYNOMIAL=new int[]{1};
         public static string PolynomialArrToString(int[] poly)
         {
             StringBuilder polyString = new StringBuilder("");
@@ -65,6 +68,43 @@ namespace PrimitivePolynomialGenerator
             int minutes = seconds / 60;
             seconds %= 60;
             return hours+"H " + minutes + "m " + seconds + "s";
+        }
+
+        public static int[] GetRow(int[,] matrice, int index)
+        {
+            int[] row=new int[matrice.GetLength(1)];
+            for (int i = 0; i < row.Length; i++)
+                row[i] = matrice[index, i];
+            return row;
+        }
+        public static bool IsZeroPolynomial(int[] poly)
+        {
+            for (int i = 0; i < poly.Length; i++)
+                if (poly[i] != 0)
+                    return false;
+            return true;
+        }
+
+        public static int[] SquareRootPoly(int[] poly)
+        {
+            int[] sqrt = new int[(poly.Length + 2) / 2];
+            for (int i = 0; i < sqrt.Length; i++)
+                sqrt[i] = poly[2*i];
+            return sqrt;
+        }
+
+        public static void PrintMatrix(int[,] matrice, string name)
+        {
+            StreamWriter streamWriter = new StreamWriter(name + ".txt");
+            for (int i = 0; i < matrice.GetLength(0); i++)
+            {
+                for (int j = 0; j < matrice.GetLength(1); j++)
+                    streamWriter.Write(matrice[i, j] + " ");
+                streamWriter.WriteLine();   
+            }
+            streamWriter.Flush();
+            streamWriter.Close();
+
         }
     }
 }
