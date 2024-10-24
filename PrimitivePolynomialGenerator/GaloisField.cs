@@ -236,7 +236,6 @@ namespace PrimitivePolynomialGenerator
                     Q[i, j] = xPow2i[j];
                 }
             }
-            Commons.PrintMatrix(Q, "Q");
             int[,] berlekampMatrix = new int[m, m];
             for (int i = 0; i < m; i++)
             {
@@ -249,8 +248,6 @@ namespace PrimitivePolynomialGenerator
                     }
                 }
             }
-
-            Commons.PrintMatrixRows(berlekampMatrix, "Berlekamp_Polynomials");
 
             List<int[]> solutionSpaceBasis = GetSolutionSpaceBasis(berlekampMatrix);
 
@@ -300,8 +297,6 @@ namespace PrimitivePolynomialGenerator
 
             identityMatrix = Commons.GenerateIdentityMatrix(rows);
             matrix = ToRowEchelonForm(matrix);
-            Commons.PrintMatrix(matrix, "matrix");
-            Commons.PrintMatrix(identityMatrix, "identityMatrix");
 
             List<int[]> solutionSpace = new List<int[]>();
 
@@ -310,7 +305,6 @@ namespace PrimitivePolynomialGenerator
                 if (Commons.IsZeroPolynomial(Commons.GetRow(matrix, i)))
                     solutionSpace.Add(Commons.GetRow(identityMatrix, i));
             }
-
             return solutionSpace;
         }
 
