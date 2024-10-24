@@ -18,27 +18,43 @@ namespace PrimitivePolynomialGenerator
         public Form1()
         {
             InitializeComponent();
-            label2.Text = "";
             waitForm = new Wait();
         }
         private void CheckIsPrimitiveButton_Click(object sender, EventArgs e)
         {
-            CheckIsPrimitiveRtbx.Text = "x^16 + x^15 + x^14 + x^11 + x^10 + x^9 + x^4 + x^3 + 1";
+            
             int[] polynomial = new int[1];
             bool isPrimitive = false;
-            string inputPolyStr = CheckIsPrimitiveRtbx.Text.Replace(" ", "");
-            inputPolyStr = CheckIsPrimitiveRtbx.Text.Replace("^", "");
+
+            richTextBox1.BackColor = SystemColors.Control;
+
+            string inputPolyStr = CheckIsPrimitiveRtbx.Text.Replace(" ", "").ToLower();
+            inputPolyStr = inputPolyStr.Replace("^", "").Trim();
+            inputPolyStr = inputPolyStr.Replace("\r", "").Replace("\n","");
+            if (inputPolyStr.Length < 1)
+                return;
+
             if (!inputPolyStr.Contains("+"))
             {
-                polynomial = new int[inputPolyStr.Length];
-                for (int i = 0; i < inputPolyStr.Length; i++)
-                    polynomial[i] = int.Parse(inputPolyStr[i].ToString());
+                try
+                {
+                    if (Commons.HexRegex.IsMatch(inputPolyStr))
+                        inputPolyStr = Commons.HexStringToIntArray(inputPolyStr);
+                    polynomial = new int[inputPolyStr.Length];
+                    for (int i = 0; i < inputPolyStr.Length; i++)
+                        polynomial[i] = int.Parse(inputPolyStr[i].ToString());
 
-                inputPolyStr = Commons.PolynomialArrToString(polynomial);
+                    inputPolyStr = Commons.PolynomialArrToString(polynomial);
+                }catch(Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return;
+                }
             }
             else
             {
-                var tempStrArr=inputPolyStr.Split(new string[] { "+" }, StringSplitOptions.RemoveEmptyEntries);
+                try { 
+                var tempStrArr = inputPolyStr.Split(new string[] { "+" }, StringSplitOptions.RemoveEmptyEntries);
                 int constantTerm = 0;
                 List<int> powers = new List<int>();
                 for (int i = 0; i < tempStrArr.Length; i++)
@@ -60,7 +76,7 @@ namespace PrimitivePolynomialGenerator
                 }
 
                 int polyDegree = powers.Max();
-                polynomial = new int[polyDegree+1];
+                polynomial = new int[polyDegree + 1];
                 for (int i = 0; i < polynomial.Length; i++)
                     polynomial[i] = 0;
                 for (int i = 0; i < powers.Count; i++)
@@ -69,31 +85,49 @@ namespace PrimitivePolynomialGenerator
                 }
 
                 polynomial[0] = constantTerm;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return;
+                }
             }
-
+            string resultStr = inputPolyStr;
             if (polynomial[0] == 0)
             {
                 isPrimitive = false;
+                resultStr += " is NOT primitive or irreducible. It is divisible by x";
+                richTextBox1.BackColor = Color.Red;
             }
             else
             {
                 //polynomial = polynomial.Reverse().ToArray();
-                GaloisField gf = new GaloisField(polynomial);
+                GaloisField gf = new GaloisField();
                 isPrimitive = gf.IsPrimitive(polynomial);
 
-                string resultStr = inputPolyStr;
+
+
                 if (isPrimitive)
+                {
                     resultStr += " is PRIMITIVE.";
+                    richTextBox1.BackColor = Color.Green;
+                }
                 else
                 {
                     resultStr += " is NOT primitive";
-                    if (gf.isIrreducible)
+                    if (gf.IsIrreducible)
+                    {
                         resultStr += " but irreducible.";
+                        richTextBox1.BackColor = Color.Yellow;
+                    }
                     else
-                        resultStr += " or irreducible. It is divisible by "+ Commons.PolynomialArrToString(gf.divisor);
+                    {
+                        resultStr += " or irreducible. It is divisible by " + Commons.PolynomialArrToString(gf.Divisor);
+                        richTextBox1.BackColor = Color.Red;
+                    }
                 }
-                richTextBox1.Text = resultStr;
             }
+            richTextBox1.Text = resultStr;
         }
 
 
@@ -124,7 +158,7 @@ namespace PrimitivePolynomialGenerator
         bool GeneratePrimPoly(int degree)
         {
             randomPoly = Commons.GenerateBinaryArray(degree);
-            GaloisField gf = new GaloisField(randomPoly);
+            GaloisField gf = new GaloisField();
             int tries = 0;
             generationResult = gf.IsPrimitive(randomPoly);
 
@@ -132,7 +166,7 @@ namespace PrimitivePolynomialGenerator
             while (!generationResult && tries < maxCount)
             {
                 randomPoly = Commons.GenerateBinaryArray(degree);
-                gf = new GaloisField(randomPoly);
+                gf = new GaloisField();
                 generationResult = gf.IsPrimitive(randomPoly);
                 tries++;
                 generatePolyBgw.ReportProgress((int)(percentage * tries));
@@ -175,11 +209,10 @@ namespace PrimitivePolynomialGenerator
                 PolynomialOutputRtbx.Text = Commons.PolynomialArrToString(randomPoly);
                 richTextBox2.Text = Commons.PrintArray(randomPoly);
                 randomPoly = randomPoly.Reverse().ToArray();
-                PolynomialBinaryOutputRtbx.Text = Commons.PrintArray(randomPoly);
+                PolynomialHexOutputRtbx.Text = Commons.BinaryStringToHexString(Commons.PrintArray(randomPoly));
             }
             else PolynomialOutputRtbx.Text = "Tekrar dene";
             progressBar1.Value = 100;
-            label2.Text = Commons.MilliSecondsToTimeStr(stp.ElapsedMilliseconds);
             GeneratePrimitiveButton.Text = "Generate";
             GeneratePrimitiveButton.Enabled = true;
             try
@@ -196,12 +229,30 @@ namespace PrimitivePolynomialGenerator
 
         private void button1_Click(object sender, EventArgs e)
         {
-            int[] x7 = new int[] { 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0, 1 };
-            int[] y7 = new int[] { 0, 0, 1 };
+            int[] x16 = new int[] { 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1 };
+            int[] y7 = new int[] { 1,0,1,0,1,0,1,1 };
 
-            GaloisField gf=new GaloisField(new int[] {1,0,1,1,1,1,1,0,1});
-            var poli= gf.ModReduce(gf.Multiply(x7, y7), new int[] { 1, 0, 1, 1, 1, 1, 1, 0, 1 });
+            GaloisField gf=new GaloisField();
+            var poli = gf.GCD(x16, y7);
+            //var poli= gf.ModReduce(gf.Multiply(x7, y7), new int[] { 1, 0, 1, 1, 1, 1, 1, 0, 1 });
             richTextBox1.Text = Commons.PolynomialArrToString(poli);
+        }
+
+        private void PolynomialDegreeTbox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                GeneratePrimitiveButton.PerformClick();
+            }
+        }
+
+        private void CheckIsPrimitiveRtbx_KeyDown(object sender, KeyEventArgs e)
+        {
+
+            if (e.KeyCode == Keys.Enter)
+            {
+                CheckIsPrimitiveButton.PerformClick();
+            }
         }
     }
 }

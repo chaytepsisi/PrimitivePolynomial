@@ -10,20 +10,22 @@ namespace PrimitivePolynomialGenerator
 {
     class GaloisField
     {
-        private int degree;
-        private int[] polynomial;
+        //private readonly int degree;
+        //private int[] polynomial;
 
-        public bool isIrreducible { get; set; }
-        public int[] divisor { get; set; }
-        public GaloisField(int[] poly)
+        public bool IsIrreducible { get; set; }
+        public int[] Divisor { get; set; }
+
+        int[,] identityMatrix;
+
+        public GaloisField()
         {
-            degree = poly.Length - 1;
-            polynomial = poly;
-            isIrreducible = false;
-            divisor = new int[0];
+            //degree = deg;
+            //polynomial = poly;
+            IsIrreducible = false;
+            Divisor = new int[0];
         }
 
-        // Multiply two polynomials in GF(2)
         // Multiply two polynomials in GF(2)
         public int[] Multiply(int[] a, int[] b)
         {
@@ -81,7 +83,7 @@ namespace PrimitivePolynomialGenerator
         }
 
         // GCD of two polynomials over GF(2)
-        private int[] GCD(int[] a, int[] b)
+        public int[] GCD(int[] a, int[] b)
         {
             while (b.Length > 1 || b[0] != 0)
             {
@@ -89,35 +91,18 @@ namespace PrimitivePolynomialGenerator
                 a = b;
                 b = temp;
             }
-            return a;
-        }
-
-        // Generate all polynomials of degree <= n over GF(2)
-        private List<int[]> GeneratePolynomials(int degree)
-        {
-            List<int[]> polynomials = new List<int[]>();
-            int limit = 1 << (degree + 1); // 2^(degree+1)
-            for (int i = 1; i < limit; i++)
-            {
-                List<int> poly = new List<int>();
-                for (int j = 0; j <= degree; j++)
-                {
-                    poly.Add((i >> j) & 1); // Get each bit
-                }
-                polynomials.Add(poly.ToArray());
-            }
-            return polynomials;
+            return a.ToArray();
         }
 
         // Check if a polynomial is irreducible over GF(2)
-        public bool IsIrreducible(int[] polinom)
+        public bool IsIrreduciblePoly(int[] polinom)
         {
-            var factors=BerlekampFactorization(polinom);
+            var factors = BerlekampFactorization(polinom);
             if (factors.Count == 1)
                 return true; // Irreducible
             else
             {
-                divisor = factors[0];
+                Divisor = factors[0];
                 return false; // Irreducible
             }
             // Generate all polynomials of degree <= degree/2
@@ -148,7 +133,7 @@ namespace PrimitivePolynomialGenerator
                 if (n % i == 0)
                 {
                     divisors.Add(i);
-                    divisors.Add(n/i);
+                    divisors.Add(n / i);
                 }
             }
             return divisors;
@@ -160,12 +145,12 @@ namespace PrimitivePolynomialGenerator
             int m = polinom.Length - 1;
 
             // Check if the polynomial is irreducible first
-            if (!IsIrreducible(polinom))
+            if (!IsIrreduciblePoly(polinom))
             {
                 return false; // Not primitive if not irreducible
             }
 
-            isIrreducible = true;
+            IsIrreducible = true;
             // Now check for primitivity: order should be 2^m - 1
             int order = (1 << m) - 1; // 2^m - 1
 
@@ -209,8 +194,6 @@ namespace PrimitivePolynomialGenerator
             return (quotient, remainder);
         }
 
-
-
         public int[] IsSquareFree(int[] polinom)
         {
             var derivative = new int[polinom.Length - 1];
@@ -219,7 +202,7 @@ namespace PrimitivePolynomialGenerator
                 derivative[i] = polinom[i + 1] * (i + 1) % 2; ;
             }
 
-            if(Commons.IsZeroPolynomial(derivative))
+            if (Commons.IsZeroPolynomial(derivative))
             {
                 return Commons.SquareRootPoly(polinom);
             }
@@ -232,7 +215,7 @@ namespace PrimitivePolynomialGenerator
         {
             List<int[]> factors = new List<int[]>();
 
-            var gcdDerivative =IsSquareFree(polinom);
+            var gcdDerivative = IsSquareFree(polinom);
             if (gcdDerivative.Length != 1)
             {
                 factors.Add(gcdDerivative);
@@ -240,21 +223,20 @@ namespace PrimitivePolynomialGenerator
                 return factors;
             }
 
-            
+
             int m = polinom.Length - 1;
 
             // Compute Q(x) = x^(2^i) mod polynomial for all i
             int[,] Q = new int[m, m];
             for (int i = 0; i < m; i++)
             {
-                int[] xPow2i = ModExp(new int[] { 0, 1 }, 2* i, polinom); // x^(2^i)
+                int[] xPow2i = ModExp(new int[] { 0, 1 }, 2 * i, polinom); // x^(2^i)
                 for (int j = 0; j < xPow2i.Length; j++)
                 {
                     Q[i, j] = xPow2i[j];
                 }
             }
             Commons.PrintMatrix(Q, "Q");
-            // Create Berlekamp matrix (Q(x) - I)
             int[,] berlekampMatrix = new int[m, m];
             for (int i = 0; i < m; i++)
             {
@@ -268,100 +250,35 @@ namespace PrimitivePolynomialGenerator
                 }
             }
 
-            // Find null space of the matrix to get factors
-            // (We can use Gaussian elimination here)
-            List<int[]> nullSpace = GaussianElimination(berlekampMatrix);
+            Commons.PrintMatrixRows(berlekampMatrix, "Berlekamp_Polynomials");
 
-            foreach (int[] nullVector in nullSpace)
+            List<int[]> solutionSpaceBasis = GetSolutionSpaceBasis(berlekampMatrix);
+
+            foreach (int[] solutionVector in solutionSpaceBasis)
             {
-                int[] gcdResult = GCD(polinom, nullVector);
-                if (gcdResult.Length > 1 && PolynomialToInt(gcdResult) != 1)
+                int[] gcdResult;
+                if (!Commons.IsZeroPolynomial(solutionVector))
                 {
-                    factors.Add(gcdResult);
+                    gcdResult = GCD(polinom, solutionVector);
+                    if (gcdResult.Length > 1 && PolynomialToInt(gcdResult) != 1)
+                    {
+                        factors.Add(gcdResult);
+                    }
+                }
+                solutionVector[0] ^= 1;
+                if (!Commons.IsZeroPolynomial(solutionVector))
+                {
+                    gcdResult = GCD(polinom, solutionVector);
+                    if (gcdResult.Length > 1 && PolynomialToInt(gcdResult) != 1)
+                    {
+                        factors.Add(gcdResult);
+                    }
                 }
             }
 
-            /*
-            // Use GCD to find factors from the null space
-            foreach (int[] nullVector in nullSpace)
-            {
-                int[] factorCandidate = new int[] { 1 }; // Start with polynomial 1
-                for (int i = 0; i < nullVector.Length; i++)
-                {
-                    if (nullVector[i] == 1)
-                    {
-                        factorCandidate = Multiply(factorCandidate, new int[] { 0, 1 }); // Multiply by x^i
-                    }
-                }
-                int[] gcdResult = GCD(polinom, factorCandidate);
-                if (gcdResult.Length > 1 && PolynomialToInt(gcdResult) != 1)
-                {
-                    factors.Add(gcdResult);
-                }
-            }*/
             factors.Add(polinom);
-                return factors;
+            return factors;
         }
-
-
-        // Gaussian elimination to find the null space
-        private List<int[]> GaussianElimination(int[,] berlekampmatrix)
-        {
-
-            var matrix = (int[,])berlekampmatrix.Clone();
-            int rows = matrix.GetLength(0);
-            int cols = matrix.GetLength(1);
-            List<int[]> nullSpace = new List<int[]>();
-            for (int i = 0; i < rows; i++)
-            {
-                // Find the leading one in the current row
-                /*for (int j = i; j < rows; j++)
-                {
-                    if (matrix[j, i] == 1)
-                    {
-                        // Swap the rows
-                        for (int k = 0; k < cols; k++)
-                        {
-                            var temp = matrix[i, k];
-                            matrix[i, k] = matrix[j, k];
-                            matrix[j, k] = temp;
-                        }
-                        break;
-                    }
-                }
-                */
-                // Eliminate below
-                for (int j = i + 1; j < rows; j++)
-                {
-                    if (matrix[j, i] == 1)
-                    {
-                        for (int k = 0; k < cols; k++)
-                        {
-                            matrix[j, k] ^= matrix[i, k];
-                        }
-                    }
-                }
-            }
-
-            for (int i = 0; i < rows; i++)
-            {
-                bool isNull = true;
-                for (int j = 0; j < cols; j++)
-                    if (matrix[i, j] == 1)
-                    {
-                        isNull = false;
-                        break;
-                    }
-                if (isNull)
-                {
-                    nullSpace.Add(Commons.GetRow(berlekampmatrix, i));
-                }
-            }
-
-            return nullSpace;
-        }
-
-
 
         private ulong PolynomialToInt(int[] poly)
         {
@@ -374,6 +291,85 @@ namespace PrimitivePolynomialGenerator
                 }
             }
             return result;
+        }
+
+        public List<int[]> GetSolutionSpaceBasis(int[,] matrix)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+
+            identityMatrix = Commons.GenerateIdentityMatrix(rows);
+            matrix = ToRowEchelonForm(matrix);
+            Commons.PrintMatrix(matrix, "matrix");
+            Commons.PrintMatrix(identityMatrix, "identityMatrix");
+
+            List<int[]> solutionSpace = new List<int[]>();
+
+            for (int i = 0; i < rows; i++)
+            {
+                if (Commons.IsZeroPolynomial(Commons.GetRow(matrix, i)))
+                    solutionSpace.Add(Commons.GetRow(identityMatrix, i));
+            }
+
+            return solutionSpace;
+        }
+
+        int[,] ToRowEchelonForm(int[,] matrix)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            int lead = 0;
+
+
+            for (int r = 0; r < rows; r++)
+            {
+                if (lead >= cols) break;
+
+                // Find the pivot column
+                int pivotRow = r;
+                while (pivotRow < rows && matrix[pivotRow, lead] == 0)
+                {
+                    pivotRow++;
+                }
+
+                if (pivotRow == rows)
+                {
+                    lead++;
+                    continue;
+                }
+
+                // Swap to get the pivot in place
+                if (pivotRow != r)
+                {
+                    for (int j = 0; j < cols; j++)
+                    {
+                        int temp = matrix[r, j];
+                        matrix[r, j] = matrix[pivotRow, j];
+                        matrix[pivotRow, j] = temp;
+
+
+                        temp = identityMatrix[r, j];
+                        identityMatrix[r, j] = identityMatrix[pivotRow, j];
+                        identityMatrix[pivotRow, j] = temp;
+                    }
+                }
+
+                // Eliminate using column operations
+                for (int i = 0; i < rows; i++)
+                {
+                    if (i != r && matrix[i, lead] == 1)
+                    {
+                        for (int j = 0; j < cols; j++)
+                        {
+                            matrix[i, j] ^= matrix[r, j]; // Modulo for binary
+                            identityMatrix[i, j] ^= identityMatrix[r, j]; // Modulo for binary
+                        }
+                    }
+                }
+                lead++;
+            }
+
+            return matrix;
         }
     }
 }
