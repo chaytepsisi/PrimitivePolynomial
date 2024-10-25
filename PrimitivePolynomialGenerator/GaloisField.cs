@@ -10,8 +10,6 @@ namespace PrimitivePolynomialGenerator
 {
     class GaloisField
     {
-        //private readonly int degree;
-        //private int[] polynomial;
 
         public bool IsIrreducible { get; set; }
         public int[] Divisor { get; set; }
@@ -20,8 +18,6 @@ namespace PrimitivePolynomialGenerator
 
         public GaloisField()
         {
-            //degree = deg;
-            //polynomial = poly;
             IsIrreducible = false;
             Divisor = new int[0];
         }
@@ -41,7 +37,7 @@ namespace PrimitivePolynomialGenerator
         }
 
         // Modular reduction of the polynomial over GF(2^m)
-        public int[] ModReduce(int[] polinom, int[] modPoly)
+        public int[] ModularReduction(int[] polinom, int[] modPoly)
         {
             int[] poly = (int[])polinom.Clone(); // Clone to avoid modifying the original poly
             int polyDeg = poly.Length - 1;
@@ -65,7 +61,7 @@ namespace PrimitivePolynomialGenerator
         }
 
         // Modular exponentiation in GF(2^m)
-        private int[] ModExp(int[] basePoly, int exp, int[] modPoly)
+        private int[] ModularExponentiation(int[] basePoly, int exp, int[] modPoly)
         {
             int[] result = { 1 }; // Start with polynomial '1'
             int[] basePower = (int[])basePoly.Clone(); // Clone to avoid modification
@@ -74,9 +70,9 @@ namespace PrimitivePolynomialGenerator
             {
                 if ((exp & 1) == 1) // If the exponent bit is set
                 {
-                    result = ModReduce(Multiply(result, basePower), modPoly);
+                    result = ModularReduction(Multiply(result, basePower), modPoly);
                 }
-                basePower = ModReduce(Multiply(basePower, basePower), modPoly);
+                basePower = ModularReduction(Multiply(basePower, basePower), modPoly);
                 exp >>= 1;
             }
             return result;
@@ -87,7 +83,7 @@ namespace PrimitivePolynomialGenerator
         {
             while (b.Length > 1 || b[0] != 0)
             {
-                int[] temp = ModReduce(a, b);
+                int[] temp = ModularReduction(a, b);
                 a = b;
                 b = temp;
             }
@@ -95,7 +91,7 @@ namespace PrimitivePolynomialGenerator
         }
 
         // Check if a polynomial is irreducible over GF(2)
-        public bool IsIrreduciblePoly(int[] polinom)
+        public bool CheckIfIrreducible(int[] polinom)
         {
             var factors = BerlekampFactorization(polinom);
             if (factors.Count == 1)
@@ -124,28 +120,15 @@ namespace PrimitivePolynomialGenerator
         }
 
         // Find divisors of a number
-        private List<int> FindDivisors(int n)
-        {
-            List<int> divisors = new List<int>();
-            int limit = (int)Math.Sqrt(n);
-            for (int i = 1; i <= limit; i++)
-            {
-                if (n % i == 0)
-                {
-                    divisors.Add(i);
-                    divisors.Add(n / i);
-                }
-            }
-            return divisors;
-        }
+      
 
         // Check if the polynomial is primitive over GF(2^m)
-        public bool IsPrimitive(int[] polinom)
+        public bool CheckIfPrimitive(int[] polinom)
         {
             int m = polinom.Length - 1;
 
             // Check if the polynomial is irreducible first
-            if (!IsIrreduciblePoly(polinom))
+            if (!CheckIfIrreducible(polinom))
             {
                 return false; // Not primitive if not irreducible
             }
@@ -155,14 +138,14 @@ namespace PrimitivePolynomialGenerator
             int order = (1 << m) - 1; // 2^m - 1
 
             // Find all divisors of the order
-            List<int> divisors = FindDivisors(order);
+            List<int> divisors = Commons.FindDivisors(order);
 
             // Check for each divisor whether x^d ≡ 1 (mod p(x)) for any divisor < 2^m - 1
             foreach (int d in divisors)
             {
                 if (d < order)
                 {
-                    int[] modExpResult = ModExp(new int[] { 0, 1 }, d, (int[])polinom.Clone());
+                    int[] modExpResult = ModularExponentiation(new int[] { 0, 1 }, d, (int[])polinom.Clone());
                     if (modExpResult.Length == 1 && modExpResult[0] == 1)
                     {
                         return false; // Not primitive if x^d ≡ 1 for any divisor d < 2^m - 1
@@ -230,7 +213,7 @@ namespace PrimitivePolynomialGenerator
             int[,] Q = new int[m, m];
             for (int i = 0; i < m; i++)
             {
-                int[] xPow2i = ModExp(new int[] { 0, 1 }, 2 * i, polinom); // x^(2^i)
+                int[] xPow2i = ModularExponentiation(new int[] { 0, 1 }, 2 * i, polinom); // x^(2^i)
                 for (int j = 0; j < xPow2i.Length; j++)
                 {
                     Q[i, j] = xPow2i[j];
@@ -257,7 +240,7 @@ namespace PrimitivePolynomialGenerator
                 if (!Commons.IsZeroPolynomial(solutionVector))
                 {
                     gcdResult = GCD(polinom, solutionVector);
-                    if (gcdResult.Length > 1 && PolynomialToInt(gcdResult) != 1)
+                    if (gcdResult.Length > 1 && Commons.PolynomialToInt(gcdResult) != 1)
                     {
                         factors.Add(gcdResult);
                     }
@@ -266,7 +249,7 @@ namespace PrimitivePolynomialGenerator
                 if (!Commons.IsZeroPolynomial(solutionVector))
                 {
                     gcdResult = GCD(polinom, solutionVector);
-                    if (gcdResult.Length > 1 && PolynomialToInt(gcdResult) != 1)
+                    if (gcdResult.Length > 1 && Commons.PolynomialToInt(gcdResult) != 1)
                     {
                         factors.Add(gcdResult);
                     }
@@ -275,19 +258,6 @@ namespace PrimitivePolynomialGenerator
 
             factors.Add(polinom);
             return factors;
-        }
-
-        private ulong PolynomialToInt(int[] poly)
-        {
-            ulong result = 0;
-            for (int i = 0; i < poly.Length; i++)
-            {
-                if (poly[i] != 0)
-                {
-                    result |= (ulong)1 << i;
-                }
-            }
-            return result;
         }
 
         public List<int[]> GetSolutionSpaceBasis(int[,] matrix)

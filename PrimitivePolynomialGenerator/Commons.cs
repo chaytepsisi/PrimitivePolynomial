@@ -230,5 +230,32 @@ namespace PrimitivePolynomialGenerator
             Array.Reverse(charArray);
             return new string(charArray);
         }
+
+        public static ulong PolynomialToInt(int[] poly)
+        {
+            ulong result = 0;
+            for (int i = 0; i < poly.Length; i++)
+            {
+                if (poly[i] != 0)
+                {
+                    result |= (ulong)1 << i;
+                }
+            }
+            return result;
+        }
+        public static List<int> FindDivisors(int n)
+        {
+            List<int> divisors = new List<int>();
+            int limit = (int)Math.Sqrt(n);
+            for (int i = 1; i <= limit; i++)
+            {
+                if (n % i == 0)
+                {
+                    divisors.Add(i);
+                    divisors.Add(n / i);
+                }
+            }
+            return divisors;
+        }
     }
 }

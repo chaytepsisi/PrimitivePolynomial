@@ -20,19 +20,18 @@ namespace PrimitivePolynomialGenerator
             InitializeComponent();
             waitForm = new Wait();
         }
-        private void CheckIsPrimitiveButton_Click(object sender, EventArgs e)
-        {
-            
-            int[] polynomial = new int[1];
-            bool isPrimitive = false;
 
-            richTextBox1.BackColor = SystemColors.Control;
+        private (int[] poly, string text) GetInputFromUser(string textInput) {
 
+            int[] polynomial = null;
             string inputPolyStr = CheckIsPrimitiveRtbx.Text.Replace(" ", "").ToLower();
             inputPolyStr = inputPolyStr.Replace("^", "").Trim();
-            inputPolyStr = inputPolyStr.Replace("\r", "").Replace("\n","");
+            inputPolyStr = inputPolyStr.Replace("\r", "").Replace("\n", "");
+
+
+            
             if (inputPolyStr.Length < 1)
-                return;
+                return (null, "");
 
             if (!inputPolyStr.Contains("+"))
             {
@@ -45,54 +44,66 @@ namespace PrimitivePolynomialGenerator
                         polynomial[i] = int.Parse(inputPolyStr[i].ToString());
 
                     inputPolyStr = Commons.PolynomialArrToString(polynomial);
-                }catch(Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                    return;
-                }
-            }
-            else
-            {
-                try { 
-                var tempStrArr = inputPolyStr.Split(new string[] { "+" }, StringSplitOptions.RemoveEmptyEntries);
-                int constantTerm = 0;
-                List<int> powers = new List<int>();
-                for (int i = 0; i < tempStrArr.Length; i++)
-                {
-                    if (tempStrArr[i].Contains("x"))
-                    {
-                        if (tempStrArr[i].Trim().Length == 1)
-                            powers.Add(1);
-                        else
-                        {
-                            int power = int.Parse(tempStrArr[i].Replace("x", ""));
-                            if (!powers.Contains(power))
-                                powers.Add(power);
-                            else
-                                MessageBox.Show("Tekrar eden kuvvet var: " + power);
-                        }
-                    }
-                    else constantTerm = int.Parse(tempStrArr[i]);//birden fazla constatn term var mý?
-                }
-
-                int polyDegree = powers.Max();
-                polynomial = new int[polyDegree + 1];
-                for (int i = 0; i < polynomial.Length; i++)
-                    polynomial[i] = 0;
-                for (int i = 0; i < powers.Count; i++)
-                {
-                    polynomial[powers[i]] = 1;
-                }
-
-                polynomial[0] = constantTerm;
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message);
-                    return;
+                    return (null, "");
                 }
             }
-            string resultStr = inputPolyStr;
+            else
+            {
+                try
+                {
+                    var tempStrArr = inputPolyStr.Split(new string[] { "+" }, StringSplitOptions.RemoveEmptyEntries);
+                    int constantTerm = 0;
+                    List<int> powers = new List<int>();
+                    for (int i = 0; i < tempStrArr.Length; i++)
+                    {
+                        if (tempStrArr[i].Contains("x"))
+                        {
+                            if (tempStrArr[i].Trim().Length == 1)
+                                powers.Add(1);
+                            else
+                            {
+                                int power = int.Parse(tempStrArr[i].Replace("x", ""));
+                                if (!powers.Contains(power))
+                                    powers.Add(power);
+                                else
+                                    MessageBox.Show("Tekrar eden kuvvet var: " + power);
+                            }
+                        }
+                        else constantTerm = int.Parse(tempStrArr[i]);//birden fazla constatn term var mý?
+                    }
+
+                    int polyDegree = powers.Max();
+                    polynomial = new int[polyDegree + 1];
+                    for (int i = 0; i < polynomial.Length; i++)
+                        polynomial[i] = 0;
+                    for (int i = 0; i < powers.Count; i++)
+                    {
+                        polynomial[powers[i]] = 1;
+                    }
+
+                    polynomial[0] = constantTerm;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return (null, "");
+                }
+            }
+            return (polynomial, inputPolyStr);
+        }
+        private void CheckIsPrimitiveButton_Click(object sender, EventArgs e)
+        {
+            
+            bool isPrimitive = false;
+
+            richTextBox1.BackColor = SystemColors.Control;
+
+
+            var (polynomial, resultStr) = GetInputFromUser(richTextBox1.Text); ;
             if (polynomial[0] == 0)
             {
                 isPrimitive = false;
@@ -101,10 +112,8 @@ namespace PrimitivePolynomialGenerator
             }
             else
             {
-                //polynomial = polynomial.Reverse().ToArray();
                 GaloisField gf = new GaloisField();
-                isPrimitive = gf.IsPrimitive(polynomial);
-
+                isPrimitive = gf.CheckIfPrimitive(polynomial);
 
 
                 if (isPrimitive)
@@ -160,14 +169,14 @@ namespace PrimitivePolynomialGenerator
             randomPoly = Commons.GenerateBinaryArray(degree);
             GaloisField gf = new GaloisField();
             int tries = 0;
-            generationResult = gf.IsPrimitive(randomPoly);
+            generationResult = gf.CheckIfPrimitive(randomPoly);
 
             double percentage = 100.0 / maxCount;
             while (!generationResult && tries < maxCount)
             {
                 randomPoly = Commons.GenerateBinaryArray(degree);
                 gf = new GaloisField();
-                generationResult = gf.IsPrimitive(randomPoly);
+                generationResult = gf.CheckIfPrimitive(randomPoly);
                 tries++;
                 generatePolyBgw.ReportProgress((int)(percentage * tries));
                 if (generatePolyBgw.CancellationPending)
@@ -179,26 +188,6 @@ namespace PrimitivePolynomialGenerator
     private void generatePolyBgw_DoWork(object sender, DoWorkEventArgs e)
         {
             GeneratePrimPoly(n);
-            /*if (n < 33 || n%2==1)
-            {
-                GeneratePrimPoly(n);
-            }
-            else
-            {
-                if ((n % 2 == 0))
-                {
-                    if (GeneratePrimPoly(n / 2))
-                    {
-                        var poly1 = (int[])randomPoly.Clone();
-                        if (GeneratePrimPoly(n / 2))
-                        {
-                            var poly2 = (int[])randomPoly.Clone();
-                            GaloisField tempGF= new GaloisField(poly1);
-                            randomPoly = tempGF.Multiply(poly1, poly2);
-                        }
-                    }
-                }
-            }*/
         }
 
         private void generatePolyBgw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)

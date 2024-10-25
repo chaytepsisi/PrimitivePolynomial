@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrimitivePolynomial", "PrimitivePolynomial\PrimitivePolynomial.csproj", "{6BE89D37-F11F-4D80-8120-8D3CBD5A5E49}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrimitivePolynomialGenerator", "PrimitivePolynomialGenerator\PrimitivePolynomialGenerator.csproj", "{A96F94DA-3652-4014-BABC-E60EC3F4AB20}"
 EndProject
 Global
@@ -13,10 +11,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6BE89D37-F11F-4D80-8120-8D3CBD5A5E49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6BE89D37-F11F-4D80-8120-8D3CBD5A5E49}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6BE89D37-F11F-4D80-8120-8D3CBD5A5E49}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6BE89D37-F11F-4D80-8120-8D3CBD5A5E49}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A96F94DA-3652-4014-BABC-E60EC3F4AB20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A96F94DA-3652-4014-BABC-E60EC3F4AB20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A96F94DA-3652-4014-BABC-E60EC3F4AB20}.Release|Any CPU.ActiveCfg = Release|Any CPU
