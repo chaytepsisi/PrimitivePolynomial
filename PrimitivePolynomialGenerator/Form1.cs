@@ -15,6 +15,9 @@ namespace PrimitivePolynomialGenerator
     {
         Wait waitForm;
         int maxCount = 10000;
+        string[] tapPointsArr;
+        int numberOfTaps = 0;
+
         public Form1()
         {
             InitializeComponent();
@@ -24,12 +27,9 @@ namespace PrimitivePolynomialGenerator
         private (int[] poly, string text) GetInputFromUser(string textInput) {
 
             int[] polynomial = null;
-            string inputPolyStr = CheckIsPrimitiveRtbx.Text.Replace(" ", "").ToLower();
+            string inputPolyStr = textInput.Replace(" ", "").ToLower();
             inputPolyStr = inputPolyStr.Replace("^", "").Trim();
             inputPolyStr = inputPolyStr.Replace("\r", "").Replace("\n", "");
-
-
-            
             if (inputPolyStr.Length < 1)
                 return (null, "");
 
@@ -103,7 +103,7 @@ namespace PrimitivePolynomialGenerator
             richTextBox1.BackColor = SystemColors.Control;
 
 
-            var (polynomial, resultStr) = GetInputFromUser(richTextBox1.Text); ;
+            var (polynomial, resultStr) = GetInputFromUser(CheckIsPrimitiveRtbx.Text);
             if (polynomial[0] == 0)
             {
                 isPrimitive = false;
@@ -153,6 +153,9 @@ namespace PrimitivePolynomialGenerator
                 {
                     stp.Start();
                     GeneratePrimitiveButton.Text = "Stop";
+                    if (comboBox1.Text != "Rastgele")
+                        numberOfTaps = int.Parse(comboBox1.Text);
+                    else numberOfTaps = 0;
                     generatePolyBgw.RunWorkerAsync();
                 }
             }
@@ -166,7 +169,7 @@ namespace PrimitivePolynomialGenerator
 
         bool GeneratePrimPoly(int degree)
         {
-            randomPoly = Commons.GenerateBinaryArray(degree);
+            randomPoly = Commons.GenerateBinaryArray(degree, numberOfTaps);
             GaloisField gf = new GaloisField();
             int tries = 0;
             generationResult = gf.CheckIfPrimitive(randomPoly);
@@ -174,7 +177,7 @@ namespace PrimitivePolynomialGenerator
             double percentage = 100.0 / maxCount;
             while (!generationResult && tries < maxCount)
             {
-                randomPoly = Commons.GenerateBinaryArray(degree);
+                randomPoly = Commons.GenerateBinaryArray(degree, numberOfTaps);
                 gf = new GaloisField();
                 generationResult = gf.CheckIfPrimitive(randomPoly);
                 tries++;
@@ -242,6 +245,37 @@ namespace PrimitivePolynomialGenerator
             {
                 CheckIsPrimitiveButton.PerformClick();
             }
+        }
+
+        private void PolynomialDegreeTbox_TextChanged(object sender, EventArgs e)
+        {
+            if (int.TryParse(PolynomialDegreeTbox.Text, out n))
+            {
+                comboBox1.DataSource = null;
+                tapPointsArr = new string[n];
+                tapPointsArr[0] = "Rastgele";
+                if (n > 1)
+                {
+                    for (int i = 1; i < n; i++)
+                    {
+                        tapPointsArr[i] = (i + 1).ToString();
+                    }
+                    comboBox1.DataSource = tapPointsArr;
+                    comboBox1.Enabled = true;
+                }
+                else comboBox1.Enabled = false;
+            }
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            var (dividentPoly, dividentResultStr) = GetInputFromUser(DividentRtbx.Text);
+            var (divisorPoly, divisorResultStr) = GetInputFromUser(DivisorRtbx.Text);
+
+            GaloisField galoisField = new GaloisField();
+            var(quotient, remainder)=galoisField.PolynomialDivide(dividentPoly, divisorPoly);
+            QuotientTbx.Text = Commons.PrintArray(quotient);
+            RemainderRtbx.Text = Commons.PrintArray(remainder);
         }
     }
 }

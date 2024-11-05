@@ -45,13 +45,43 @@ namespace PrimitivePolynomialGenerator
             return copyPolynomial;
         }
 
-        public static int[] GenerateBinaryArray(int n)
+        public static int[] GenerateBinaryArray(int n, int numberOfTapPoints = 0)
         {
             Random rnd = new Random();
             int[] arr = new int[n + 1];
-            for (int i = 1; i < n; i++)
-                arr[i] = rnd.Next(2);
             arr[0] = arr[n] = 1;
+            if (numberOfTapPoints == 0)
+            {
+                for (int i = 1; i < n; i++)
+                    arr[i] = rnd.Next(2);
+            }
+            else
+            {
+                bool toBeReversed = false;
+
+                if (numberOfTapPoints > n / 2)
+                {
+                    numberOfTapPoints = n - numberOfTapPoints;
+                    toBeReversed = true;
+                }
+                for (int i = 1; i < n; i++)
+                    arr[i] = 0;
+                HashSet<int> tapPointSet = new HashSet<int>();
+
+                while (tapPointSet.Count < numberOfTapPoints - 2)
+                {
+                    int tapPoint = rnd.Next(1, n);
+                    if (!tapPointSet.Contains(tapPoint))
+                    {
+                        arr[tapPoint] = 1;
+                        tapPointSet.Add(tapPoint);
+                    }
+                }
+
+                if (toBeReversed)
+                    for (int i = 1; i < n; i++)
+                        arr[i] = (arr[i] + 1) % 2;
+            }
             return arr;
         }
 

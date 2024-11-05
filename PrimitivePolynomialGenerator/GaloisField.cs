@@ -61,7 +61,7 @@ namespace PrimitivePolynomialGenerator
         }
 
         // Modular exponentiation in GF(2^m)
-        private int[] ModularExponentiation(int[] basePoly, int exp, int[] modPoly)
+        private int[] ModularExponentiation(int[] basePoly, long exp, int[] modPoly)
         {
             int[] result = { 1 }; // Start with polynomial '1'
             int[] basePower = (int[])basePoly.Clone(); // Clone to avoid modification
@@ -75,6 +75,7 @@ namespace PrimitivePolynomialGenerator
                 basePower = ModularReduction(Multiply(basePower, basePower), modPoly);
                 exp >>= 1;
             }
+
             return result;
         }
 
@@ -141,7 +142,7 @@ namespace PrimitivePolynomialGenerator
                 long_divisors = Commons.GetDivisors();
             else
             {
-                long order = (0x1L << m) - 1); // 2^m - 1
+                long order = (0x1L << m) - 1; // 2^m - 1
                 long_divisors = Commons.GetDivisors(order);
             }
             // Check for each divisor whether x^d ≡ 1 (mod p(x)) for any divisor < 2^m - 1
@@ -237,6 +238,7 @@ namespace PrimitivePolynomialGenerator
                     Q[i, j] = xPow2i[j];
                 }
             }
+            Commons.PrintMatrix(Q, "Q");
             int[,] berlekampMatrix = new int[m, m];
             for (int i = 0; i < m; i++)
             {

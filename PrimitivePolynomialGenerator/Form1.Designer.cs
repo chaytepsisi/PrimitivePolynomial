@@ -45,9 +45,17 @@ namespace PrimitivePolynomialGenerator
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.CheckIsPrimitiveRtbx = new System.Windows.Forms.RichTextBox();
             this.generatePolyBgw = new System.ComponentModel.BackgroundWorker();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.DividentRtbx = new System.Windows.Forms.RichTextBox();
+            this.DivisorRtbx = new System.Windows.Forms.RichTextBox();
+            this.QuotientTbx = new System.Windows.Forms.RichTextBox();
+            this.button1 = new System.Windows.Forms.Button();
+            this.RemainderRtbx = new System.Windows.Forms.RichTextBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            this.tabPage3.SuspendLayout();
             this.SuspendLayout();
             // 
             // CheckIsPrimitiveButton
@@ -64,6 +72,7 @@ namespace PrimitivePolynomialGenerator
             // 
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
@@ -73,6 +82,7 @@ namespace PrimitivePolynomialGenerator
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.comboBox1);
             this.tabPage1.Controls.Add(this.PolynomialHexOutputRtbx);
             this.tabPage1.Controls.Add(this.richTextBox2);
             this.tabPage1.Controls.Add(this.progressBar1);
@@ -134,11 +144,12 @@ namespace PrimitivePolynomialGenerator
             this.PolynomialDegreeTbox.Name = "PolynomialDegreeTbox";
             this.PolynomialDegreeTbox.Size = new System.Drawing.Size(98, 25);
             this.PolynomialDegreeTbox.TabIndex = 3;
+            this.PolynomialDegreeTbox.TextChanged += new System.EventHandler(this.PolynomialDegreeTbox_TextChanged);
             this.PolynomialDegreeTbox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.PolynomialDegreeTbox_KeyDown);
             // 
             // GeneratePrimitiveButton
             // 
-            this.GeneratePrimitiveButton.Location = new System.Drawing.Point(232, 8);
+            this.GeneratePrimitiveButton.Location = new System.Drawing.Point(314, 8);
             this.GeneratePrimitiveButton.Name = "GeneratePrimitiveButton";
             this.GeneratePrimitiveButton.Size = new System.Drawing.Size(123, 32);
             this.GeneratePrimitiveButton.TabIndex = 2;
@@ -184,6 +195,71 @@ namespace PrimitivePolynomialGenerator
             this.generatePolyBgw.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.generatePolyBgw_ProgressChanged);
             this.generatePolyBgw.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.generatePolyBgw_RunWorkerCompleted);
             // 
+            // comboBox1
+            // 
+            this.comboBox1.Enabled = false;
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(211, 12);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(97, 25);
+            this.comboBox1.TabIndex = 11;
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.RemainderRtbx);
+            this.tabPage3.Controls.Add(this.button1);
+            this.tabPage3.Controls.Add(this.QuotientTbx);
+            this.tabPage3.Controls.Add(this.DivisorRtbx);
+            this.tabPage3.Controls.Add(this.DividentRtbx);
+            this.tabPage3.Location = new System.Drawing.Point(4, 26);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(481, 276);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "tabPage3";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // DividentRtbx
+            // 
+            this.DividentRtbx.Location = new System.Drawing.Point(75, 13);
+            this.DividentRtbx.Name = "DividentRtbx";
+            this.DividentRtbx.Size = new System.Drawing.Size(398, 58);
+            this.DividentRtbx.TabIndex = 0;
+            this.DividentRtbx.Text = "";
+            // 
+            // DivisorRtbx
+            // 
+            this.DivisorRtbx.Location = new System.Drawing.Point(75, 77);
+            this.DivisorRtbx.Name = "DivisorRtbx";
+            this.DivisorRtbx.Size = new System.Drawing.Size(398, 58);
+            this.DivisorRtbx.TabIndex = 1;
+            this.DivisorRtbx.Text = "";
+            // 
+            // QuotientTbx
+            // 
+            this.QuotientTbx.Location = new System.Drawing.Point(80, 178);
+            this.QuotientTbx.Name = "QuotientTbx";
+            this.QuotientTbx.Size = new System.Drawing.Size(398, 36);
+            this.QuotientTbx.TabIndex = 2;
+            this.QuotientTbx.Text = "";
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(396, 141);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(77, 31);
+            this.button1.TabIndex = 3;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click_1);
+            // 
+            // RemainderRtbx
+            // 
+            this.RemainderRtbx.Location = new System.Drawing.Point(80, 220);
+            this.RemainderRtbx.Name = "RemainderRtbx";
+            this.RemainderRtbx.Size = new System.Drawing.Size(398, 36);
+            this.RemainderRtbx.TabIndex = 4;
+            this.RemainderRtbx.Text = "";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
@@ -199,6 +275,7 @@ namespace PrimitivePolynomialGenerator
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
+            this.tabPage3.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -219,5 +296,12 @@ namespace PrimitivePolynomialGenerator
         private System.ComponentModel.BackgroundWorker generatePolyBgw;
         private RichTextBox richTextBox2;
         private RichTextBox PolynomialHexOutputRtbx;
+        private ComboBox comboBox1;
+        private TabPage tabPage3;
+        private Button button1;
+        private RichTextBox QuotientTbx;
+        private RichTextBox DivisorRtbx;
+        private RichTextBox DividentRtbx;
+        private RichTextBox RemainderRtbx;
     }
 }
