@@ -135,13 +135,31 @@ namespace PrimitivePolynomialGenerator
 
             IsIrreducible = true;
             // Now check for primitivity: order should be 2^m - 1
-            int order = (1 << m) - 1; // 2^m - 1
-
             // Find all divisors of the order
-            List<int> divisors = Commons.FindDivisors(order);
-
+            List<long> long_divisors;
+            if (m == 64)
+                long_divisors = Commons.GetDivisors();
+            else
+            {
+                long order = (0x1L << m) - 1); // 2^m - 1
+                long_divisors = Commons.GetDivisors(order);
+            }
             // Check for each divisor whether x^d ≡ 1 (mod p(x)) for any divisor < 2^m - 1
-            foreach (int d in divisors)
+            foreach (long d in long_divisors)
+            {
+                //if (d < order)
+                //{
+                    int[] modExpResult = ModularExponentiation(new int[] { 0, 1 }, d, (int[])polinom.Clone());
+                    if (modExpResult.Length == 1 && modExpResult[0] == 1)
+                    {
+                        return false; // Not primitive if x^d ≡ 1 for any divisor d < 2^m - 1
+                    }
+                //}
+            }
+            //int order = (1 << m) - 1; // 2^m - 1
+            //List<int> divisors = Commons.FindDivisors(order);
+            // Check for each divisor whether x^d ≡ 1 (mod p(x)) for any divisor < 2^m - 1
+            /*foreach (int d in divisors)
             {
                 if (d < order)
                 {
@@ -151,7 +169,7 @@ namespace PrimitivePolynomialGenerator
                         return false; // Not primitive if x^d ≡ 1 for any divisor d < 2^m - 1
                     }
                 }
-            }
+            }*/
 
             // If no such d was found, the polynomial is primitive
             return true;
